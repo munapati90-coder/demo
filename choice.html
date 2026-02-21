@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spice Garden — Choose Your Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        .choice-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .choice-container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .choice-header {
+            margin-bottom: 3rem;
+        }
+
+        .choice-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .choice-card {
+            background: var(--bg-glass-strong);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+
+        .choice-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: var(--shadow-lg), var(--shadow-gold);
+        }
+
+        .choice-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .choice-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .choice-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .btn-choice {
+            margin-top: auto;
+            background: var(--gold-gradient);
+            color: white;
+            padding: 0.8rem 1.6rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            opacity: 0.95;
+            transition: var(--trans-base);
+            box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .choice-card:hover .btn-choice {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(208, 175, 115, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Guard
+        if (!sessionStorage.getItem("sg_session")) window.location.href = "login.html";
+    </script>
+
+    <div class="choice-wrap">
+        <div class="choice-container">
+            <div class="choice-header">
+                <h1 class="text-gold">Welcome, <span id="userGreet">Guest</span>! 👋</h1>
+                <p class="text-muted" id="userMobileLine">Choose how you would like to experience our hospitality today.
+                </p>
+            </div>
+
+            <div class="choice-grid">
+                <!-- MODE: TABLE -->
+                <a href="index.html?mode=table" class="choice-card">
+                    <div class="choice-icon">🪑</div>
+                    <h3>Book a Table</h3>
+                    <p>Reserve your spot in our dining hall. Perfect for a quick meal without pre-ordering.</p>
+                    <div class="btn-choice">Select Mode</div>
+                </a>
+
+                <!-- MODE: FOOD -->
+                <a href="index.html?mode=food" class="choice-card">
+                    <div class="choice-icon">🥡</div>
+                    <h3>Order Food</h3>
+                    <p>Browse our menu and pre-order your favorite dishes for pickup or quick serving.</p>
+                    <div class="btn-choice">Select Mode</div>
+                </a>
+
+                <!-- MODE: BOTH -->
+                <a href="index.html?mode=both" class="choice-card">
+                    <div class="choice-icon">✨</div>
+                    <h3>Table + Food</h3>
+                    <p>The ultimate experience. Reserve your favorite table and have your meal ready when you arrive.
+                    </p>
+                    <div class="btn-choice" style="background: var(--text-main);">Full Experience</div>
+                </a>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <button onclick="logout()" class="btn btn-secondary" style="font-size: 0.8rem;">Logout & Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            sessionStorage.removeItem("sg_session");
+            sessionStorage.removeItem("sg_name");
+            sessionStorage.removeItem("sg_mobile");
+            window.location.href = "login.html";
+        }
+
+        // Show user's name & mobile
+        window.onload = () => {
+            const name = sessionStorage.getItem("sg_name");
+            const mobile = sessionStorage.getItem("sg_mobile");
+            if (name) document.getElementById("userGreet").textContent = name;
+            if (mobile) document.getElementById("userMobileLine").textContent =
+                `📱 ${mobile}  ·  Choose how you would like to experience our hospitality today.`;
+        };
+    </script>
+</body>
+
+</html>

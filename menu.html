@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spice Garden — Full Menu</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        .tab-container {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .tab {
+            padding: 8px 18px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: var(--trans-base);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .tab:hover {
+            background: #ffffff;
+            color: var(--text-main);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab.active {
+            background: var(--gold-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .menu-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            transition: var(--trans-base);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gold-light);
+            background: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SESSION GUARD -->
+    <script>
+        var SESSION_KEY = "sg_session";
+        var s = sessionStorage.getItem(SESSION_KEY);
+        if (s !== "user" && s !== "admin") { window.location.replace("login.html"); }
+    </script>
+
+    <nav>
+        <a href="index.html" class="nav-brand">Spice Garden <span>Fine Indian Cuisine</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">Book Table</a></li>
+            <li><a href="menu.html" class="nav-link active">Menu</a></li>
+            <li id="adminLink" style="display:none"><a href="admin.html" class="nav-link text-gold">Admin</a></li>
+            <li><button onclick="logout()" class="btn btn-secondary"
+                    style="padding:0.4rem 1rem;font-size:0.8rem;">Logout</button></li>
+        </ul>
+    </nav>
+
+    <header class="hero" style="padding: 2.5rem 1rem;">
+        <span class="badge">✦ Our Culinary Offerings ✦</span>
+        <h1 style="font-size: 2.2rem;">The <em>Full Menu</em></h1>
+        <p style="max-width: 500px; font-size: 0.9rem;">Crafted with authentic spices, premium ingredients, and
+            generations of culinary wisdom.</p>
+    </header>
+
+    <div class="container section">
+
+        <!-- TABS -->
+        <div class="tab-container" id="tabs">
+            <button class="tab active" data-cat="all">✨ All Specialities</button>
+            <button class="tab" data-cat="starters">🥗 Starters</button>
+            <button class="tab" data-cat="mains">🍛 Mains</button>
+            <button class="tab" data-cat="breads">🫓 Breads &amp; Rice</button>
+            <button class="tab" data-cat="desserts">🍮 Desserts</button>
+            <button class="tab" data-cat="drinks">🥤 Drinks</button>
+        </div>
+
+        <!-- GRID -->
+        <div class="menu-grid" id="menuGrid"
+            style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:1.5rem;">
+            <!-- JS Rendered -->
+        </div>
+
+        <div style="text-align:center; margin-top:4rem">
+            <a href="index.html" class="btn btn-primary">
+                📅 Book a Table Now
+            </a>
+        </div>
+
+    </div>
+
+    <footer
+        style="text-align:center;padding:2rem;color:var(--text-muted);font-size:0.85rem;border-top:1px solid rgba(0,0,0,0.05);margin-top:2rem;">
+        <p>📍 123 Fine Dining Lane, Your City &nbsp;|&nbsp; 📞 +91 98765 43210</p>
+        <p style="margin-top:0.5rem;">All prices include GST.</p>
+    </footer>
+
+    <script>
+        const MENU = [
+            // Starters
+            { name: "Samosa (2 pcs)", desc: "Crispy pastry filled with spiced potato & peas", price: "₹120", emoji: "🥟", cat: "starters", veg: true },
+            { name: "Paneer Tikka", desc: "Smoky marinated cottage cheese off the tandoor", price: "₹280", emoji: "🧀", cat: "starters", veg: true },
+            { name: "Chicken 65", desc: "Crispy deep-fried spiced chicken", price: "₹320", emoji: "🍗", cat: "starters", veg: false },
+            { name: "Tandoori Prawns", desc: "Juicy prawns marinated in tandoori masala", price: "₹480", emoji: "🦐", cat: "starters", veg: false },
+            { name: "Veg Spring Rolls", desc: "Crunchy rolls with mixed veggie filling", price: "₹180", emoji: "🌯", cat: "starters", veg: true },
+            { name: "Seekh Kebab", desc: "Minced lamb kebabs grilled on skewers", price: "₹360", emoji: "🍖", cat: "starters", veg: false },
+
+            // Mains
+            { name: "Butter Chicken", desc: "Classic creamy tomato-cashew gravy", price: "₹380", emoji: "🍗", cat: "mains", veg: false },
+            { name: "Paneer Tikka Masala", desc: "Chargrilled paneer in rich masala sauce", price: "₹320", emoji: "🍛", cat: "mains", veg: true },
+            { name: "Dal Makhani", desc: "Slow-cooked black lentils, butter & cream", price: "₹240", emoji: "🫘", cat: "mains", veg: true },
+            { name: "Chicken Biryani", desc: "Fragrant basmati rice with tender chicken", price: "₹420", emoji: "🍚", cat: "mains", veg: false },
+            { name: "Veg Biryani", desc: "Aromatic rice with garden vegetables", price: "₹340", emoji: "🍚", cat: "mains", veg: true },
+            { name: "Mutton Rogan Josh", desc: "Kashmiri-style slow-cooked lamb curry", price: "₹520", emoji: "🥩", cat: "mains", veg: false },
+            { name: "Fish Curry", desc: "Fresh fish in a tangy coconut-tamarind gravy", price: "₹460", emoji: "🐟", cat: "mains", veg: false },
+            { name: "Chana Masala", desc: "Chickpeas in bold spiced tomato gravy", price: "₹220", emoji: "🌱", cat: "mains", veg: true },
+            { name: "Palak Paneer", desc: "Cottage cheese in smooth spinach sauce", price: "₹280", emoji: "🥬", cat: "mains", veg: true },
+            { name: "Mixed Veg Curry", desc: "Seasonal vegetables in fragrant sauce", price: "₹200", emoji: "🥦", cat: "mains", veg: true },
+
+            // Breads & Rice
+            { name: "Butter Naan", desc: "Soft tandoor-baked bread with butter", price: "₹70", emoji: "🫓", cat: "breads", veg: true },
+            { name: "Garlic Naan", desc: "Naan topped with fresh garlic & herbs", price: "₹80", emoji: "🫓", cat: "breads", veg: true },
+            { name: "Tandoori Roti", desc: "Whole-wheat bread from the tandoor", price: "₹50", emoji: "🫓", cat: "breads", veg: true },
+            { name: "Paratha", desc: "Flaky whole-wheat bread, pan-fried", price: "₹70", emoji: "🫓", cat: "breads", veg: true },
+            { name: "Jeera Rice", desc: "Basmati rice tempered with cumin", price: "₹150", emoji: "🍚", cat: "breads", veg: true },
+            { name: "Plain Rice", desc: "Steamed long-grain basmati rice", price: "₹120", emoji: "🍚", cat: "breads", veg: true },
+
+            // Desserts
+            { name: "Gulab Jamun (2 pcs)", desc: "Soft milk-solid dumplings in rose syrup", price: "₹120", emoji: "🍮", cat: "desserts", veg: true },
+            { name: "Rasmalai", desc: "Chilled cottage cheese pats in saffron milk", price: "₹150", emoji: "🧁", cat: "desserts", veg: true },
+            { name: "Kheer", desc: "Creamy rice pudding with cardamom & nuts", price: "₹130", emoji: "🍨", cat: "desserts", veg: true },
+            { name: "Kulfi (Mango/Pistachio)", desc: "Traditional Indian ice cream on a stick", price: "₹110", emoji: "🍦", cat: "desserts", veg: true },
+            { name: "Gajar Halwa", desc: "Warm carrot pudding with ghee & nuts", price: "₹140", emoji: "🥕", cat: "desserts", veg: true },
+
+            // Drinks
+            { name: "Mango Lassi", desc: "Chilled sweet yoghurt & mango drink", price: "₹120", emoji: "🥭", cat: "drinks", veg: true },
+            { name: "Masala Chai", desc: "Spiced Indian milk tea", price: "₹70", emoji: "☕", cat: "drinks", veg: true },
+            { name: "Fresh Lime Soda", desc: "Fizzy lime soda — sweet or salty", price: "₹90", emoji: "🍋", cat: "drinks", veg: true },
+            { name: "Jeera Soda (Jal Jeera)", desc: "Cumin-infused sparkling drink", price: "₹80", emoji: "🥤", cat: "drinks", veg: true },
+            { name: "Bottled Water (500ml)", desc: "Chilled mineral water", price: "₹40", emoji: "💧", cat: "drinks", veg: true },
+            { name: "Rose Sharbat", desc: "Chilled rose syrup & milk drink", price: "₹100", emoji: "🌹", cat: "drinks", veg: true },
+        ];
+
+        let currentCat = "all";
+
+        window.onload = () => {
+            if (sessionStorage.getItem(SESSION_KEY) === "admin") {
+                document.getElementById("adminLink").style.display = "block";
+            }
+            renderMenu();
+        };
+
+        function logout() { sessionStorage.removeItem(SESSION_KEY); window.location.href = "login.html"; }
+
+        function renderMenu() {
+            const grid = document.getElementById("menuGrid");
+            const items = currentCat === "all" ? MENU : MENU.filter(m => m.cat === currentCat);
+            grid.innerHTML = items.map(m => `
+                <div class="menu-item">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">${m.emoji}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.3rem;">
+                        <h4 style="font-size:1rem;margin:0;">${m.name}</h4>
+                        <span style="font-weight:700;color:var(--gold-dark);font-size:0.9rem;">${m.price}</span>
+                    </div>
+                    <p class="text-muted" style="font-size:0.8rem;flex-grow:1;margin-bottom:0.8rem;">${m.desc}</p>
+                    <div style="border-top:1px solid rgba(0,0,0,0.05);padding-top:0.6rem;font-size:0.7rem;font-weight:700;">
+                        ${m.veg ?
+                    '<span style="color:#166534;background:#DCFCE7;padding:2px 6px;border-radius:4px;">🟢 VEG</span>' :
+                    '<span style="color:#991B1B;background:#FEE2E2;padding:2px 6px;border-radius:4px;">🔴 NON-VEG</span>'}
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // Tab clicks
+        document.getElementById("tabs").addEventListener("click", function (e) {
+            if (e.target.classList.contains("tab")) {
+                document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+                e.target.classList.add("active");
+                currentCat = e.target.dataset.cat;
+                renderMenu();
+            }
+        });
+
+        renderMenu();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spice Garden — Sign In</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 390px;
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 1);
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            animation: cardIn 0.4s ease-out;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.2rem;
+        }
+
+        .login-logo p {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Role tabs: Customer / Management */
+        .role-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 3px;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .role-tab.active {
+            background: white;
+            color: var(--gold-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Sub-tabs: Login / Register */
+        .sub-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 1.2rem;
+        }
+
+        .sub-tab {
+            flex: 1;
+            padding: 7px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .sub-tab.active {
+            color: var(--gold-dark);
+            border-bottom-color: var(--gold);
+        }
+
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            text-align: left;
+        }
+
+        .login-form label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: white;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+        }
+
+        .login-btn {
+            background: var(--gold-gradient);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: var(--trans-base);
+            box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 32px rgba(208, 175, 115, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .err-msg {
+            color: var(--danger);
+            font-size: 0.75rem;
+            min-height: 1.2em;
+        }
+
+        .ok-msg {
+            color: #166534;
+            font-size: 0.75rem;
+            min-height: 1.2em;
+        }
+
+        footer {
+            margin-top: 1.5rem;
+            font-size: 0.65rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-wrap">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>🌶️ Spice Garden</h1>
+                <p>Fine Indian Cuisine</p>
+            </div>
+
+            <!-- ROLE TABS -->
+            <div class="role-tabs">
+                <button class="role-tab active" id="tabUser" onclick="switchRole('user')">👤 Customer</button>
+                <button class="role-tab" id="tabAdmin" onclick="switchRole('admin')">🔐 Management</button>
+            </div>
+
+            <!-- ===== CUSTOMER PANEL ===== -->
+            <div id="panelUser" class="panel active">
+
+                <!-- Sub-tabs: Login | Register -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" id="subLogin" onclick="switchSub('login')">Sign In</button>
+                    <button class="sub-tab" id="subRegister" onclick="switchSub('register')">New User</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div id="paneLogin" class="panel active">
+                    <form class="login-form" onsubmit="doLogin(event)">
+                        <div>
+                            <label>📱 Mobile Number</label>
+                            <input type="tel" id="loginMobile" class="login-input" placeholder="+91 xxxxx" required>
+                        </div>
+                        <div>
+                            <label>🔒 Password</label>
+                            <input type="password" id="loginPass" class="login-input" placeholder="••••••••" required>
+                        </div>
+                        <div id="loginErr" class="err-msg"></div>
+                        <button type="submit" id="loginBtn" class="login-btn">Sign In →</button>
+                    </form>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div id="paneRegister" class="panel">
+                    <form class="login-form" onsubmit="doRegister(event)">
+                        <div>
+                            <label>👤 Full Name</label>
+                            <input type="text" id="regName" class="login-input" placeholder="Your full name" required>
+                        </div>
+                        <div>
+                            <label>📱 Mobile Number</label>
+                            <input type="tel" id="regMobile" class="login-input" placeholder="+91 xxxxx" required>
+                        </div>
+                        <div>
+                            <label>🔒 Create Password</label>
+                            <input type="password" id="regPass" class="login-input" placeholder="Min 6 characters"
+                                required minlength="6">
+                        </div>
+                        <div id="regErr" class="err-msg"></div>
+                        <div id="regOk" class="ok-msg"></div>
+                        <button type="submit" id="regBtn" class="login-btn">Create Account ✔</button>
+                    </form>
+                </div>
+
+            </div><!-- /panelUser -->
+
+            <!-- ===== ADMIN PANEL ===== -->
+            <div id="panelAdmin" class="panel">
+                <form class="login-form" onsubmit="loginAdmin(event)">
+                    <div>
+                        <label>Username</label>
+                        <input type="text" id="adminUser" class="login-input" placeholder="Admin username" required>
+                    </div>
+                    <div>
+                        <label>Security Key</label>
+                        <input type="password" id="adminPass" class="login-input" placeholder="••••••••" required>
+                    </div>
+                    <div id="adminErr" class="err-msg"></div>
+                    <button type="submit" class="login-btn"
+                        style="background:linear-gradient(135deg,#1E293B,#475569);box-shadow:none;">Admin Sign
+                        In</button>
+                </form>
+            </div>
+
+            <footer>&copy; 2026 Spice Garden</footer>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbyFpeajjPkn7-mu6pdTd3dfzHTKelL2Fx73ZyPgrYxfUiuYGm-sgm0EdMzHlKq48bUPDw/exec";
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "admin@123";
+        const SESSION_KEY = "sg_session";
+
+        /* Auto-redirect if already logged in */
+        (() => {
+            const s = sessionStorage.getItem(SESSION_KEY);
+            if (s === "user") window.location.href = "choice.html";
+            if (s === "admin") window.location.href = "admin.html";
+        })();
+
+        /* ---------- Tab switching ---------- */
+        function switchRole(role) {
+            document.querySelectorAll('.role-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#panelUser, #panelAdmin').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab' + (role === 'user' ? 'User' : 'Admin')).classList.add('active');
+            document.getElementById('panel' + (role === 'user' ? 'User' : 'Admin')).classList.add('active');
+            clearMsgs();
+        }
+
+        function switchSub(sub) {
+            document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('paneLogin').classList.remove('active');
+            document.getElementById('paneRegister').classList.remove('active');
+            document.getElementById(sub === 'login' ? 'subLogin' : 'subRegister').classList.add('active');
+            document.getElementById(sub === 'login' ? 'paneLogin' : 'paneRegister').classList.add('active');
+            clearMsgs();
+        }
+
+        function clearMsgs() {
+            ['loginErr', 'regErr', 'regOk', 'adminErr'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '';
+            });
+        }
+
+        /* ---------- User Login ---------- */
+        function doLogin(e) {
+            e.preventDefault();
+            const mobile = document.getElementById("loginMobile").value.trim();
+            const pass = document.getElementById("loginPass").value.trim();
+            const btn = document.getElementById("loginBtn");
+            const err = document.getElementById("loginErr");
+
+            btn.disabled = true;
+            btn.textContent = "Signing in…";
+            err.textContent = "";
+
+            fetch(`${SHEET_URL}?action=login&mobile=${encodeURIComponent(mobile)}&password=${encodeURIComponent(pass)}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        sessionStorage.setItem(SESSION_KEY, "user");
+                        sessionStorage.setItem("sg_name", res.name);
+                        sessionStorage.setItem("sg_mobile", res.mobile);
+                        window.location.href = "choice.html";
+                    } else {
+                        err.textContent = "❌ " + (res.error || "Login failed.");
+                        btn.disabled = false;
+                        btn.textContent = "Sign In →";
+                    }
+                })
+                .catch(() => {
+                    err.textContent = "❌ Network error. Try again.";
+                    btn.disabled = false;
+                    btn.textContent = "Sign In →";
+                });
+        }
+
+        /* ---------- User Register ---------- */
+        function doRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById("regName").value.trim();
+            const mobile = document.getElementById("regMobile").value.trim();
+            const pass = document.getElementById("regPass").value.trim();
+            const btn = document.getElementById("regBtn");
+            const err = document.getElementById("regErr");
+            const ok = document.getElementById("regOk");
+
+            btn.disabled = true;
+            btn.textContent = "Creating account…";
+            err.textContent = "";
+            ok.textContent = "";
+
+            fetch(`${SHEET_URL}?action=register&name=${encodeURIComponent(name)}&mobile=${encodeURIComponent(mobile)}&password=${encodeURIComponent(pass)}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        sessionStorage.setItem(SESSION_KEY, "user");
+                        sessionStorage.setItem("sg_name", res.name);
+                        sessionStorage.setItem("sg_mobile", res.mobile);
+                        ok.textContent = "✅ Account created! Redirecting…";
+                        setTimeout(() => { window.location.href = "choice.html"; }, 800);
+                    } else {
+                        err.textContent = "❌ " + (res.error || "Registration failed.");
+                        btn.disabled = false;
+                        btn.textContent = "Create Account ✔";
+                    }
+                })
+                .catch(() => {
+                    err.textContent = "❌ Network error. Try again.";
+                    btn.disabled = false;
+                    btn.textContent = "Create Account ✔";
+                });
+        }
+
+        /* ---------- Admin Login ---------- */
+        function loginAdmin(e) {
+            e.preventDefault();
+            const u = document.getElementById("adminUser").value.trim();
+            const p = document.getElementById("adminPass").value.trim();
+            if (u === ADMIN_USER && p === ADMIN_PASS) {
+                sessionStorage.setItem(SESSION_KEY, "admin");
+                window.location.href = "admin.html";
+            } else {
+                document.getElementById("adminErr").textContent = "❌ Invalid credentials.";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spice Garden — Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media(max-width:900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 100px;
+        }
+
+        .filter-card {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(24px);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            background: rgba(248, 250, 252, 0.8);
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .btn-cancel {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        /* Analytics Charts */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            height: 300px;
+            backdrop-filter: blur(24px);
+        }
+
+        /* Stat Cards */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            backdrop-filter: blur(24px);
+            transition: var(--trans-base);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Row Highlight */
+        .data-table tr.cancelled td {
+            opacity: 0.6;
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .data-table tr.completed td {
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-completed {
+            background: #ebf5ff;
+            color: #1e40af;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 1);
+            animation: modalFade 0.3s ease;
+        }
+
+        @keyframes modalFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.75rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .bulk-actions {
+            display: none;
+            background: var(--gold-dark);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+            align-items: center;
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUTH GUARD -->
+    <script>
+        if (sessionStorage.getItem("sg_session") !== "admin") {
+            window.location.replace("login.html");
+        }
+    </script>
+
+    <nav>
+        <a href="index.html" class="nav-brand">Spice Garden <span>Admin Panel</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">Customer View</a></li>
+            <li><button onclick="logout()" class="btn btn-secondary"
+                    style="font-size:0.8rem;padding:0.4rem 1rem;">Logout</button></li>
+        </ul>
+    </nav>
+
+    <div class="container section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <div>
+                <h2 class="text-gold">Dashboard</h2>
+                <p class="text-muted">Overview of bookings and performace.</p>
+            </div>
+            <div>
+                <button onclick="exportCSV()" class="btn btn-secondary" style="margin-right:10px;">⬇ Export CSV</button>
+                <button onclick="fetchData()" class="btn btn-primary">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="stat-row">
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🪑</div>
+                <div class="stat-label">Tables</div>
+                <div class="stat-value" id="statTableMode" style="color:var(--gold-dark)">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🥡</div>
+                <div class="stat-label">Food Only</div>
+                <div class="stat-value" id="statFoodMode" style="color:var(--success)">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✨</div>
+                <div class="stat-label">Combined</div>
+                <div class="stat-value" id="statBothMode" style="color:var(--text-main)">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-label">Guests</div>
+                <div class="stat-value" id="statGuests">0</div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS ROW -->
+        <div
+            style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:3rem;">
+            <div class="chart-container">
+                <h4 style="margin-bottom:1rem;">Occupancy Overview</h4>
+                <canvas id="chartOccupancy"></canvas>
+            </div>
+            <div class="chart-container">
+                <h4 style="margin-bottom:1rem;">Table Popularity</h4>
+                <canvas id="chartTables"></canvas>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+
+            <!-- SIDEBAR FILTERS -->
+            <div class="sidebar">
+                <div class="filter-card">
+                    <h4 style="margin-bottom:1rem;">Filters</h4>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Service Type</label>
+                        <select id="fType" class="form-select" style="padding:6px 10px; font-size:0.8rem;"
+                            onchange="applyFilters()">
+                            <option value="">All Services</option>
+                            <option value="TABLE">Table Only</option>
+                            <option value="FOOD">Food Only</option>
+                            <option value="BOTH">Combined</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Search</label>
+                        <input type="text" id="fSearch" class="form-input" style="padding:6px 10px; font-size:0.8rem;"
+                            placeholder="Name, Ref, Phone..." oninput="applyFilters()" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Date</label>
+                        <input type="date" id="fDate" class="form-input" style="padding:6px 10px; font-size:0.8rem;"
+                            onchange="applyFilters()" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Status</label>
+                        <select id="fStatus" class="form-select" style="padding:6px 10px; font-size:0.8rem;"
+                            onchange="applyFilters()">
+                            <option value="">All Statuses</option>
+                            <option>Confirmed</option>
+                            <option>Cancelled</option>
+                            <option>Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Table</label>
+                        <select id="fTable" class="form-select" style="padding:6px 10px; font-size:0.8rem;"
+                            onchange="applyFilters()">
+                            <option value="">All Tables</option>
+                            <!-- Populated dynamic -->
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Time Slot</label>
+                        <select id="fTime" class="form-select" style="padding:6px 10px; font-size:0.8rem;"
+                            onchange="applyFilters()">
+                            <option value="">All Slots</option>
+                            <option value="12:00 PM">12:00 PM – 02:00 PM</option>
+                            <option value="02:00 PM">02:00 PM – 04:00 PM</option>
+                            <option value="05:00 PM">05:00 PM – 07:00 PM</option>
+                            <option value="07:00 PM">07:00 PM – 09:00 PM</option>
+                            <option value="09:00 PM">09:00 PM – 11:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0.8rem;">
+                        <label class="form-label" style="font-size:0.75rem; margin-bottom:2px;">Min Guests</label>
+                        <input type="number" id="fMinGuests" class="form-input"
+                            style="padding:6px 10px; font-size:0.8rem;" placeholder="0" oninput="applyFilters()" />
+                    </div>
+                    <button onclick="resetFilters()" class="btn btn-secondary"
+                        style="width:100%; margin-top:1rem; font-size:0.8rem;">Clear All</button>
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:1rem;">
+                        <span id="countDisplay">0</span> records found
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATA TABLE -->
+            <div class="card"
+                style="padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:800px;">
+                <div style="overflow-y:auto; flex:1; position:relative;">
+                    <table class="data-table">
+                        <thead style="position:sticky; top:0; z-index:10; background:white;">
+                            <tr>
+                                <th style="width:40px;"><input type="checkbox" id="selectAll"
+                                        onclick="toggleSelectAll(this)"></th>
+                                <th>Ref</th>
+                                <th>Date/Time</th>
+                                <th style="width:70px;">Type</th>
+                                <th>Customer</th>
+                                <th style="width:80px;">Table</th>
+                                <th style="width:60px;">Guests</th>
+                                <th>Orders</th>
+                                <th>Requests</th>
+                                <th>Status</th>
+                                <th style="width:90px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="11" style="text-align:center;padding:2rem;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- BULK ACTIONS BAR -->
+                <div class="bulk-actions" id="bulkBar">
+                    <span id="bulkCount">0 selected</span>
+                    <button onclick="bulkCancel()" class="action-btn btn-cancel" style="padding:8px 16px;">Cancel
+                        All</button>
+                    <button onclick="bulkDelete()" class="action-btn btn-delete" style="padding:8px 16px;">Delete
+                        All</button>
+                </div>
+
+                <!-- EDIT MODAL -->
+                <div id="editModal" class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-gold" style="margin-bottom:1.5rem;">Edit Booking</h3>
+                        <form id="editForm" onsubmit="saveBooking(event)">
+                            <input type="hidden" id="editRef">
+                            <div class="form-group">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" id="editName" class="form-input" required>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" id="editDate" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Time Slot</label>
+                                    <select id="editTime" class="form-select" required>
+                                        <option>05:00 PM - 07:00 PM</option>
+                                        <option>07:00 PM - 09:00 PM</option>
+                                        <option>09:00 PM - 11:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Table ID</label>
+                                    <input type="number" id="editTableId" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Booking Type</label>
+                                    <select id="editType" class="form-select" required>
+                                        <option value="TABLE">Table Only</option>
+                                        <option value="FOOD">Food Only</option>
+                                        <option value="BOTH">Table + Food</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Guests</label>
+                                <input type="number" id="editGuests" class="form-input" required>
+                            </div>
+                            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="closeEditModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TOAST CONTAINER -->
+                <div class="toast-container" id="toastContainer"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbyFpeajjPkn7-mu6pdTd3dfzHTKelL2Fx73ZyPgrYxfUiuYGm-sgm0EdMzHlKq48bUPDw/exec";
+        let allData = [];
+        let charts = {};
+
+        window.onload = () => {
+            fetchData();
+        };
+
+        function fetchData() {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;">Loading data from Google Sheets...</td></tr>';
+
+            fetch(SHEET_URL + "?action=all")
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        allData = d.bookings;
+                        document.getElementById("fDate").value = ""; // Default to ALL for better overview initially
+                        populateTableFilter();
+                        applyFilters();
+                        updateCharts();
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:red;">Error loading data.</td></tr>';
+                    }
+                });
+        }
+
+        function populateTableFilter() {
+            const select = document.getElementById("fTable");
+            const tables = [...new Set(allData.map(r => r["Table No."]))].sort();
+            select.innerHTML = '<option value="">All Tables</option>' +
+                tables.map(t => `<option value="${t}">${t}</option>`).join("");
+        }
+
+        function resetFilters() {
+            document.getElementById("fSearch").value = "";
+            document.getElementById("fDate").value = "";
+            document.getElementById("fStatus").value = "";
+            document.getElementById("fTable").value = "";
+            document.getElementById("fMinGuests").value = "";
+            document.getElementById("fType").value = "";
+            const fTime = document.getElementById("fTime");
+            if (fTime) fTime.value = "";
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const q = document.getElementById("fSearch").value.toLowerCase().trim();
+            const date = document.getElementById("fDate").value;        // YYYY-MM-DD or ""
+            const status = document.getElementById("fStatus").value;
+            const table = document.getElementById("fTable").value;
+            const minGuests = parseInt(document.getElementById("fMinGuests").value) || 0;
+            const type = document.getElementById("fType").value.toUpperCase(); // TABLE, FOOD, BOTH or ""
+            const timeSlot = document.getElementById("fTime") ? document.getElementById("fTime").value : "";
+
+            const filtered = allData.filter(row => {
+
+                // Search across name, ref, phone, email
+                const searchMatch = !q ||
+                    String(row["Customer Name"] || "").toLowerCase().includes(q) ||
+                    String(row["Booking Ref"] || "").toLowerCase().includes(q) ||
+                    String(row["Phone"] || "").includes(q) ||
+                    String(row["Email"] || "").toLowerCase().includes(q);
+
+                // Date: normalize sheet date to YYYY-MM-DD for comparison
+                const rawDate = String(row["Date"] || "");
+                const normDate = rawDate.includes("/")
+                    ? rawDate.split("/").reverse().join("-")   // DD/MM/YYYY → YYYY-MM-DD
+                    : rawDate.substring(0, 10);                // already YYYY-MM-DD or ISO
+                const dateMatch = !date || normDate === date;
+
+                // Status: exact match
+                const statusMatch = !status || String(row["Status"] || "").toLowerCase() === status.toLowerCase();
+
+                // Table: string comparison (handles "Table 1" vs "Table 1")
+                const tableMatch = !table || String(row["Table No."] || "").trim() === String(table).trim();
+
+                // Type: uppercase comparison
+                const rowType = String(row["Booking Type"] || "").toUpperCase();
+                const typeMatch = !type || rowType === type;
+
+                // Guests: if not a valid number (e.g. "N/A" for food-only), skip guest check
+                const guestRaw = parseInt(row["Guests"]);
+                const guestMatch = !minGuests || isNaN(guestRaw) ? true : guestRaw >= minGuests;
+
+                // Time slot filter
+                const timeMatch = !timeSlot || String(row["Time"] || "").includes(timeSlot);
+
+                return searchMatch && dateMatch && statusMatch && tableMatch && typeMatch && guestMatch && timeMatch;
+            });
+
+            updateStats(filtered);
+            renderTable(filtered);
+        }
+
+        function updateStats(data) {
+            const total = data.length;
+            const guests = data.reduce((acc, r) => {
+                const g = parseInt(r["Guests"]);
+                return acc + (isNaN(g) ? 0 : g);
+            }, 0);
+            const tableMode = data.filter(r => (r["Booking Type"] || "").toUpperCase() === "TABLE").length;
+            const foodMode = data.filter(r => (r["Booking Type"] || "").toUpperCase() === "FOOD").length;
+            const bothMode = data.filter(r => (r["Booking Type"] || "").toUpperCase() === "BOTH").length;
+
+            document.getElementById("statTotal").textContent = total;
+            document.getElementById("statGuests").textContent = guests;
+            document.getElementById("statTableMode").textContent = tableMode;
+            document.getElementById("statFoodMode").textContent = foodMode;
+            document.getElementById("statBothMode").textContent = bothMode;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById("tableBody");
+            document.getElementById("countDisplay").textContent = data.length;
+            document.getElementById("selectAll").checked = false;
+            updateBulkBar();
+
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text-muted);">No matching records found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(row => {
+                const st = row["Status"] || "Confirmed";
+                const rowClass = st.toLowerCase();
+                const badgeClass = `status-${st.toLowerCase()}`;
+
+                return `
+                <tr class="${rowClass}">
+                   <td><input type="checkbox" class="row-check" value="${row["Booking Ref"]}" onchange="updateBulkBar()"></td>
+                   <td style="font-weight:bold;font-family:monospace;white-space:nowrap">${row["Booking Ref"]}</td>
+                   <td style="white-space:nowrap">${row["Date"]}<br><span style="font-size:0.8rem;color:var(--text-muted)">${row["Time"]}</span></td>
+                   <td>
+                      <span style="font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:12px; 
+                        ${row["Booking Type"] === "TABLE" ? 'background:rgba(200, 134, 10, 0.1); color:var(--gold-dark);' :
+                        row["Booking Type"] === "FOOD" ? 'background:rgba(16, 185, 129, 0.1); color:#065f46;' :
+                            'background:rgba(79, 70, 229, 0.1); color:#3730a3;'} ">
+                        ${row["Booking Type"] === "TABLE" ? '🪑 TABLE' :
+                        row["Booking Type"] === "FOOD" ? '🥡 FOOD' : '✨ BOTH'}
+                      </span>
+                   </td>
+                   <td>
+                      <div style="font-weight:700">${row["Customer Name"]}</div>
+                      <div style="font-size:0.8rem;color:var(--text-muted)">${row["Phone"]}</div>
+                   </td>
+                   <td style="text-align:center">${row["Table No."] || "N/A"}</td>
+                   <td style="text-align:center;font-weight:700">${row["Guests"] || "0"}</td>
+                    <td>
+                      <div style="max-width:220px; font-size:0.75rem; color:var(--text-main); line-height:1.4;" title="${row["Guest Orders"] || 'None'}">
+                        ${(row["Guest Orders"] || "").split(", ").map(g => `<div style="margin-bottom:2px; padding:2px 6px; background:rgba(0,0,0,0.02); border-radius:4px; display:inline-block; margin-right:4px;">${g}</div>`).join("") || '<span style="color:#CBD5E1">None</span>'}
+                      </div>
+                    </td>
+                   <td>
+                      <div style="max-width:120px; font-size:0.75rem; color:var(--gold-dark); line-height:1.3" title="${row["Special Requests"] || 'None'}">
+                        ${row["Special Requests"] || '-'}
+                      </div>
+                   </td>
+                   <td>
+                      <select class="status-select ${badgeClass}" onchange="changeStatus('${row["Booking Ref"]}', this.value)">
+                         <option ${st === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                         <option ${st === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                         <option ${st === 'Completed' ? 'selected' : ''}>Completed</option>
+                      </select>
+                   </td>
+                   <td style="white-space:nowrap">
+                      <button class="action-btn" style="background:#f1f5f9" onclick="openEditModal('${row["Booking Ref"]}')">✎</button>
+                      <button class="action-btn btn-delete" onclick="deleteBooking('${row["Booking Ref"]}')">🗑</button>
+                   </td>
+                </tr>
+             `;
+            }).join("");
+        }
+
+        /* BULK ACTIONS */
+        function toggleSelectAll(master) {
+            document.querySelectorAll(".row-check").forEach(chk => chk.checked = master.checked);
+            updateBulkBar();
+        }
+
+        function updateBulkBar() {
+            const selected = document.querySelectorAll(".row-check:checked");
+            const bar = document.getElementById("bulkBar");
+            const bulkCount = document.getElementById("bulkCount");
+            if (bulkCount) bulkCount.textContent = `${selected.length} items selected`;
+            if (bar) bar.style.display = selected.length > 0 ? "flex" : "none";
+        }
+
+        /* MODAL CONTROLS */
+        function openEditModal(ref) {
+            const row = allData.find(r => r["Booking Ref"] === ref);
+            if (!row) return;
+
+            document.getElementById("editRef").value = ref;
+            document.getElementById("editName").value = row["Customer Name"];
+            document.getElementById("editDate").value = row["Date"];
+            document.getElementById("editTime").value = row["Time"];
+            document.getElementById("editTableId").value = row["Table ID"];
+            document.getElementById("editGuests").value = row["Guests"];
+            document.getElementById("editType").value = (row["Booking Type"] || "BOTH").toUpperCase();
+
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function closeEditModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function saveBooking(e) {
+            e.preventDefault();
+            const ref = document.getElementById("editRef").value;
+            const data = {
+                "Customer Name": document.getElementById("editName").value,
+                "Date": document.getElementById("editDate").value,
+                "Time": document.getElementById("editTime").value,
+                "Table ID": document.getElementById("editTableId").value,
+                "Guests": document.getElementById("editGuests").value,
+                "Booking Type": document.getElementById("editType").value
+            };
+
+            showToast("Saving...", "Updating booking details...", "warning");
+            fetch(`${SHEET_URL}?action=update&ref=${ref}&data=${encodeURIComponent(JSON.stringify(data))}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast("Saved", "Booking updated successfully.");
+                        closeEditModal();
+                        fetchData();
+                    } else {
+                        showToast("Error", res.error || "Failed to update", "error");
+                    }
+                });
+        }
+
+        function changeStatus(ref, newStatus) {
+            showToast("Updating...", `Setting status to ${newStatus}`, "warning");
+            fetch(`${SHEET_URL}?action=status&ref=${ref}&status=${newStatus}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast("Updated", "Status saved.");
+                        fetchData();
+                    } else {
+                        showToast("Error", res.error || "Failed", "error");
+                        fetchData(); // Reset UI
+                    }
+                });
+        }
+
+        function bulkCancel() {
+            const refs = Array.from(document.querySelectorAll(".row-check:checked")).map(c => c.value);
+            if (confirm(`Cancel ${refs.length} bookings?`)) {
+                showToast("Updating...", `Cancelling ${refs.length} items...`, "warning");
+                Promise.all(refs.map(ref =>
+                    fetch(`${SHEET_URL}?action=status&ref=${ref}&status=Cancelled`).then(r => r.json())
+                )).then(() => {
+                    showToast("Success", "Bookings cancelled.");
+                    fetchData();
+                });
+            }
+        }
+
+        function bulkDelete() {
+            const refs = Array.from(document.querySelectorAll(".row-check:checked")).map(c => c.value);
+            if (confirm(`Permanently delete ${refs.length} bookings?`)) {
+                refs.forEach(ref => performAction("delete", ref, true));
+            }
+        }
+
+        /* ACTIONS */
+        function cancelBooking(ref) {
+            if (!confirm("Cancel booking " + ref + "?")) return;
+            changeStatus(ref, "Cancelled");
+        }
+
+        function deleteBooking(ref) {
+            if (!confirm("Permanently delete " + ref + "?")) return;
+            performAction("delete", ref);
+        }
+
+        function performAction(action, ref, isBulk = false) {
+            if (!isBulk) showToast("Processing...", "Communicating with server...", "warning");
+            fetch(`${SHEET_URL}?action=${action}&ref=${ref}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        if (!isBulk) {
+                            showToast("Success", "Action completed.");
+                            fetchData();
+                        } else {
+                            clearTimeout(window.bulkRefreshTimer);
+                            window.bulkRefreshTimer = setTimeout(fetchData, 500);
+                        }
+                    } else {
+                        showToast("Error", d.error || "Failed", "error");
+                    }
+                });
+        }
+
+        function exportCSV() {
+            if (!allData.length) return showToast("No Data", "Nothing to export.", "warning");
+
+            const headers = Object.keys(allData[0]);
+            const rows = allData.map(row => headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`).join(","));
+            const csv = [headers.join(","), ...rows].join("\n");
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookings_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast("Exported", "Data downloaded as CSV.");
+        }
+
+        function logout() { sessionStorage.removeItem("sg_session"); window.location.href = "login.html"; }
+
+        function showToast(title, msg, type = "success") {
+            const c = document.getElementById("toastContainer");
+            const t = document.createElement("div");
+            t.className = `toast ${type}`;
+            t.innerHTML = `<div class="toast-content"><h4>${title}</h4><p>${msg}</p></div>`;
+            c.appendChild(t);
+            requestAnimationFrame(() => t.classList.add("show"));
+            setTimeout(() => t.remove(), 4000);
+        }
+
+        /* CHARTS */
+        function updateCharts() {
+            // 1. Tables Popularity
+            const tableCounts = {};
+            allData.forEach(r => {
+                const t = r["Table No."] || "Unknown";
+                tableCounts[t] = (tableCounts[t] || 0) + 1;
+            });
+
+            const ctxTables = document.getElementById("chartTables").getContext('2d');
+            if (charts.tables) charts.tables.destroy();
+
+            charts.tables = new Chart(ctxTables, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(tableCounts),
+                    datasets: [{
+                        label: 'Bookings',
+                        data: Object.values(tableCounts),
+                        backgroundColor: 'rgba(200, 134, 10, 0.6)',
+                        borderColor: 'rgba(200, 134, 10, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Occupancy by Status
+            const statusCounts = { Confirmed: 0, Cancelled: 0, Completed: 0 };
+            allData.forEach(r => {
+                const s = r["Status"] || "Confirmed";
+                statusCounts[s] = (statusCounts[s] || 0) + 1;
+            });
+
+            const ctxOcc = document.getElementById("chartOccupancy").getContext('2d');
+            if (charts.occ) charts.occ.destroy();
+
+            charts.occ = new Chart(ctxOcc, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#10B981', '#EF4444', '#3B82F6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
